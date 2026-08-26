@@ -1,0 +1,28 @@
+{
+  "name": "akuity",
+  "version": "0.1.0",
+  "description": "Akuity Platform workflows over MCP: complete or partial onboarding, plus normal, incident, and pre-promotion work delegated to Akuity Intelligence.",
+  "author": {
+    "name": "Akuity",
+    "url": "https://akuity.io"
+  },
+  "homepage": "https://docs.akuity.io",
+  "repository": "https://github.com/akuity/agent-plugins",
+  "keywords": ["akuity", "argocd", "kargo", "gitops", "kubernetes", "mcp"],
+  "skills": "./skills/",
+  "mcpServers": "./codex.mcp.json",
+  "interface": {
+    "displayName": "Akuity",
+    "shortDescription": "Akuity onboarding and Intelligence workflows",
+    "longDescription": "Connect to the Akuity Platform MCP endpoint, onboard all or part of an Argo CD and Kargo delivery setup, and delegate normal, incident, or promotion-risk work to Akuity Intelligence.",
+    "developerName": "Akuity",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "websiteURL": "https://akuity.io",
+    "defaultPrompt": [
+      "Onboard my application onto Akuity using only the parts I need.",
+      "Ask the Deployment Agent about this Argo CD or Kargo instance.",
+      "Assess a Kargo promotion before I release it."
+    ]
+  }
+}

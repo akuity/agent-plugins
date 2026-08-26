@@ -1,0 +1,26 @@
+{
+  "name": "akuity",
+  "version": "0.1.0",
+  "description": "Akuity Platform workflows over MCP: complete or partial onboarding, plus normal, incident, and pre-promotion work delegated to Akuity Intelligence.",
+  "author": {
+    "name": "Akuity",
+    "url": "https://akuity.io"
+  },
+  "homepage": "https://docs.akuity.io",
+  "repository": "https://github.com/akuity/agent-plugins",
+  "keywords": ["akuity", "argocd", "kargo", "gitops", "kubernetes", "mcp"],
+  "userConfig": {
+    "endpoint": {
+      "type": "string",
+      "title": "Platform MCP endpoint",
+      "description": "The Akuity platform MCP URL for your organization's region: https://akuity.cloud/mcp (US) or https://eu.akuity.cloud/mcp (EU).",
+      "default": "https://akuity.cloud/mcp"
+    }
+  },
+  "mcpServers": {
+    "akuity": {
+      "type": "http",
+      "url": "${user_config.endpoint}"
+    }
+  }
+}

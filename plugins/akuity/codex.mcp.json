@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "akuity": {
+      "type": "http",
+      "url": "https://akuity.cloud/mcp"
+    }
+  }
+}

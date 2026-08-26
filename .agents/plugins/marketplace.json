@@ -1,0 +1,20 @@
+{
+  "name": "akuity",
+  "interface": {
+    "displayName": "Akuity"
+  },
+  "plugins": [
+    {
+      "name": "akuity",
+      "source": {
+        "source": "local",
+        "path": "./plugins/akuity"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
