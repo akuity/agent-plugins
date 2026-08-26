@@ -9,7 +9,7 @@ One URL for the region that hosts the organization—`https://akuity.cloud/mcp` 
 - **Login**: the server requires authentication before its tools work. The client opens a browser OAuth flow against Akuity Cloud, including the organization's SSO, and authorizes the user under the organization's own RBAC.
 - **OAuth callback**: native clients may use any loopback callback port. Hosted HTTPS and custom-scheme clients are also supported after a one-time consent screen that names the redirect destination. The plugin does not pin a callback port.
 - **Automation**: CI uses an Akuity API key in an `Authorization: Bearer <key>` header instead of the browser flow.
-- **Organization**: an API key pins the organization. An interactive login with exactly one org membership binds automatically. Otherwise the organization must be supplied — there is currently no tool that lists organizations, so if it is not in the session context, ask the user for their organization id.
+- **Organization**: an API key pins the organization. An interactive login with exactly one org membership binds automatically. Otherwise resolve it with `list_organizations` and confirm the target with the user when more than one organization is available.
 
 ## Instance endpoints
 
