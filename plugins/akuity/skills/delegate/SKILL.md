@@ -34,7 +34,7 @@ Only the first carries a `toolCallId`. The other two have no approval handle at 
 
 1. **The Akuity MCP server must be connected** — the platform endpoint this plugin wires, or an instance's own endpoint (see `../../references/endpoints-and-auth.md`, relative to this file). Confirm the delegation tools are present before planning work — if `create_intelligence_conversation` is not in your tool list under any prefix, stop and tell the human the server is not connected or the organization lacks the entitlement.
 2. **Know which surface you are on** — it changes the arguments (table below).
-3. **There is no "list organizations" tool.** On the platform surface, ask the human for the organization id (or read it from a portal URL) — you cannot discover it. Instance surfaces need nothing.
+3. **Resolve the organization on the platform surface.** Call `list_organizations` to map the human's organization name to its id, and confirm the target when more than one organization is available. Instance surfaces need no organization id.
 4. **Choose contexts for the requested depth.** Contexts define both the conversation's resource scope and the capabilities available to the Deployment Agent. Before creating or changing a normal conversation, read [`references/context-selection.md`](references/context-selection.md) and select the smallest exact scope that supports the request.
 
 ### Surfaces
