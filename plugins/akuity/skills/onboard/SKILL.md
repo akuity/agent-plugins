@@ -41,7 +41,7 @@ Provisioning waits are the rhythm of this flow, so batch the questions: one roun
 
 **Round one — at scope time.** Any scope:
 
-- Their Akuity organization id, unless the session already carries it (an API-key-pinned endpoint, MCP client configuration, or memory from an earlier run — offer a found candidate for confirmation, never use it unconfirmed).
+- Their Akuity organization. Call `list_organizations` to resolve its id, and offer the matching organization for confirmation before using it; never use a found candidate unconfirmed.
 - A name prefix for the things you create.
 - Confirmation that the MCP client reports the platform endpoint as connected and authenticated. Nothing in any milestone works without it.
 
