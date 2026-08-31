@@ -4,7 +4,7 @@ Agent workflows for the Akuity Platform, driven through its MCP endpoints. Insta
 
 ## What installing gets you
 
-- **The platform MCP server**: one entry, `akuity`, for the platform endpoint. It defaults to `https://akuity.cloud/mcp`; in Claude Code the EU endpoint can be selected at install time (see below), while Codex always uses the US endpoint. Installing wires the server but does not log you in — see "Install and authenticate" below. The endpoint model is documented in [`references/endpoints-and-auth.md`](references/endpoints-and-auth.md).
+- **The platform MCP server**: one entry, `akuity`, for the platform endpoint. It defaults to `https://akuity.cloud/mcp`; the EU endpoint is selected at install time in Claude Code, or set with one follow-up command in Codex (see below). Installing wires the server but does not log you in — see "Install and authenticate" below. The endpoint model is documented in [`references/endpoints-and-auth.md`](references/endpoints-and-auth.md).
 - **Workflow skills** (`skills/`): each skill guides an agent through one workflow over the MCP tools. The platform endpoint carries every workflow end to end — instance-level resources included; each instance also serves its own MCP endpoint for working with that instance's resources under its own RBAC, which is the surface for users who hold instance access but not organization access.
 
 ## Requirements
@@ -41,9 +41,17 @@ codex plugin marketplace add akuity/agent-plugins
 codex plugin add akuity@akuity
 ```
 
+This connects the US endpoint. EU organizations then override the plugin's `akuity` server with the EU endpoint:
+
+```shell
+codex mcp add akuity --url https://eu.akuity.cloud/mcp
+```
+
+The entry is stored under `mcp_servers.akuity` in `~/.codex/config.toml` and takes precedence over the plugin's bundled server; `codex mcp remove akuity` restores the US default.
+
 After installing, start a new session so Codex loads the bundled skills and MCP server, then authenticate `akuity` when prompted.
 
-The plugin is optional. Connect manually when the plugin is unavailable, when a Codex user's organization is in the EU region, when using a self-hosted or non-production platform, or when connecting a direct instance endpoint.
+The plugin is optional. Connect manually when the plugin is unavailable, when using a self-hosted or non-production platform, or when connecting a direct instance endpoint.
 
 ## Other endpoints and automation
 
@@ -77,7 +85,7 @@ For CI or automation, register the platform endpoint manually with an Akuity API
 akuity/
 ├── .claude-plugin/plugin.json   # Claude Code manifest and platform endpoint (US default, EU via --config)
 ├── .codex-plugin/plugin.json    # Codex manifest
-├── codex.mcp.json               # Codex platform endpoint (US)
+├── codex.mcp.json               # Codex platform endpoint (US default, EU via codex mcp add)
 ├── references/                  # facts shared by every skill
 │   ├── endpoints-and-auth.md    # the two endpoint kinds, login flows, enablement gates
 │   └── manifest-kinds.md        # which resource kinds go to which endpoint, apply semantics
