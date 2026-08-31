@@ -4,7 +4,7 @@ Agent workflows and client configuration for the [Akuity Platform](https://akuit
 
 ## Recommended installation
 
-Installing the plugin gives the agent both the Akuity MCP tools and the maintained workflow skills. It configures `https://akuity.cloud/mcp` by default. In Claude Code, EU organizations can select `https://eu.akuity.cloud/mcp` at install time. The plugin does not configure self-hosted, non-production, or direct instance endpoints, or the EU endpoint for Codex.
+Installing the plugin gives the agent both the Akuity MCP tools and the maintained workflow skills. It configures `https://akuity.cloud/mcp` by default. EU organizations can switch to `https://eu.akuity.cloud/mcp` — at install time in Claude Code, or with one follow-up command in Codex. The plugin does not configure self-hosted, non-production, or direct instance endpoints.
 
 ### Claude Code
 
@@ -28,6 +28,12 @@ codex plugin marketplace add akuity/agent-plugins
 codex plugin add akuity@akuity
 ```
 
+EU organizations then point the `akuity` server at the EU endpoint; this user-level entry overrides the plugin's US default:
+
+```shell
+codex mcp add akuity --url https://eu.akuity.cloud/mcp
+```
+
 Then start a new session and authenticate the `akuity` MCP server when prompted.
 
 Installing the plugin is the trust decision: its MCP server starts automatically without a separate per-server approval prompt. The plugin is optional; users can connect an MCP client manually without installing it. See the [plugin README](plugins/akuity/README.md#install-and-authenticate) for manual connection and automation guidance.
@@ -37,7 +43,7 @@ Installing the plugin is the trust decision: its MCP server starts automatically
 - There is no customer-side switch. If **MCP Access** is unavailable in the portal, contact an Akuity representative or support.
 - An Organization Owner or a custom role with Organization update permission has enabled the platform endpoint under **Organization Settings → MCP Access**.
 - MCP access is enabled for every Argo CD or Kargo instance the platform endpoint should reach.
-- The plugin configures the US endpoint by default. In Claude Code, EU organizations pass `--config endpoint=https://eu.akuity.cloud/mcp` at install time. EU organizations using Codex, and self-hosted or non-production platforms on any client, must use the manual client commands in the [plugin README](plugins/akuity/README.md#other-endpoints-and-automation).
+- The plugin configures the US endpoint by default. In Claude Code, EU organizations pass `--config endpoint=https://eu.akuity.cloud/mcp` at install time; in Codex, they run `codex mcp add akuity --url https://eu.akuity.cloud/mcp` after installing. Self-hosted or non-production platforms on any client must use the manual client commands in the [plugin README](plugins/akuity/README.md#other-endpoints-and-automation).
 
 The complete endpoint model, enablement gates, and login flows are documented in [`plugins/akuity/references/endpoints-and-auth.md`](plugins/akuity/references/endpoints-and-auth.md).
 
@@ -60,7 +66,7 @@ agent-plugins/
     └── akuity/
         ├── .claude-plugin/plugin.json      # Claude Code manifest and platform endpoint
         ├── .codex-plugin/plugin.json       # Codex manifest
-        ├── codex.mcp.json                  # Codex platform endpoint (US)
+        ├── codex.mcp.json                  # Codex platform endpoint (US default, EU via codex mcp add)
         ├── skills/
         └── references/
 ```
