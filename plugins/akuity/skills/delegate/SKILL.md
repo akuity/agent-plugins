@@ -51,13 +51,22 @@ On an instance host the dispatcher is also pinned to the product: `incident` exi
 | Tool | Use |
 | --- | --- |
 | `create_intelligence_conversation` | Start work with the On-call Agent, Promotion Advisor, or Deployment Agent |
-| `create_intelligence_message` | Send a follow-up while preserving its conversation scope (see below). **Returns empty by design** — the reply arrives asynchronously; you must poll |
-| `get_intelligence_conversation` | Full state: messages, steps, incident/promotion metadata, runbooks. Use to follow progress and read results |
+| `create_intelligence_message` | Send a follow-up while preserving its conversation scope (see below). **Returns empty by design** — the reply arrives asynchronously; follow the conversation (see [Following a conversation](#following-a-conversation)) |
+| `get_intelligence_conversation` | Full state: messages, steps, incident/promotion metadata, runbooks. Use to read progress and results |
 | `list_intelligence_conversations` | Cheap listing/filtering. Returns each conversation with an **empty `messages` array** — use it for status sweeps, not timelines |
 | `set_intelligence_tool_approval` | Approve or reject one proposed tool call, after the human decides |
 | `list_intelligence_tools` | What the native agent can do in this org, with a `mutable` flag per tool |
 
-There is also a readable resource per conversation: `akuity://orgs/{organization_id}/ai/conversations/{id}` on the platform surface and `akuity://ai/conversations/{id}` on instance surfaces. Use it when attaching a conversation as context. Follow active work by polling `get_intelligence_conversation`.
+There is also a readable resource per conversation: `akuity://orgs/{organization_id}/ai/conversations/{id}` on the platform surface and `akuity://ai/conversations/{id}` on instance surfaces. Use it when attaching a conversation as context, and subscribe to it to follow active work.
+
+### Following a conversation
+
+Work in a conversation is asynchronous: `create_intelligence_conversation` starts it and `create_intelligence_message` returns nothing, so progress is read from the conversation itself. Subscribe by default; poll only as a fallback.
+
+1. **Subscribe** to the conversation's resource on the platform surface, `akuity://orgs/{organization_id}/ai/conversations/{id}`, using your MCP client's resource subscription. The platform endpoint advertises `resources.subscribe` to clients on MCP protocol 2026-07-28 or later. Every `notifications/resources/updated` for that URI means the conversation changed: read it with `get_intelligence_conversation` and act on what you find. The notification carries only the URI, never data. The server also sends a keepalive notification for every subscribed URI about every 30 seconds, so a read that shows nothing new is normal. Read the conversation once right after subscribing — a change landing in the instant between the two is not replayed. Unsubscribe, or let the stream end, when you stop following.
+2. **Poll** `get_intelligence_conversation` every 5–15 seconds only when subscribing is unavailable: your MCP client or host does not expose resource subscriptions, the server does not advertise `resources.subscribe`, or you are on an instance surface — `akuity://ai/conversations/{id}` is readable there but not subscribable.
+
+Either way, the conversation record is the source of truth; a notification only tells you when to read it. Everything below that says "follow" means this procedure.
 
 ### Preserve conversation scope on every follow-up
 
@@ -69,7 +78,7 @@ Before every `create_intelligence_message` call:
 2. Pass the returned `contexts` and `runbooks` back unchanged as tool arguments. Copy the advertised objects exactly; do not reconstruct, shorten, or paste them into `content`.
 3. If the human explicitly changes contexts or runbooks, send the complete desired replacement sets — not only the additions or removals.
 
-If the full read fails, do not send the message: there is no safe conversation scope to preserve. After the empty send response, poll the full conversation as usual and make sure its contexts and runbooks still match the intended sets.
+If the full read fails, do not send the message: there is no safe conversation scope to preserve. After the empty send response, follow the conversation as usual and make sure its contexts and runbooks still match the intended sets.
 
 ## Scenario A — hand a degraded app to the On-call Agent
 
@@ -90,7 +99,7 @@ If the full read fails, do not send the message: there is no safe conversation s
 
 The response carries the conversation, including `id` — keep it. The On-call Agent starts automatically; the platform infers which runbooks apply and lists them under `runbooks` (empty when the instance has none configured). Tell the human the incident number (`incident.incidentNumber`) so they can find it in the portal.
 
-**2. Follow it.** Poll `get_intelligence_conversation` every 5–15 seconds. Investigations can run for several minutes, so partial progress is normal and worth surfacing.
+**2. Follow it** (see [Following a conversation](#following-a-conversation)). Investigations can run for several minutes, so partial progress is normal and worth surfacing.
 
 Read, in order of usefulness:
 
@@ -147,11 +156,11 @@ In every case, say plainly whether the change lands on the **live cluster** or i
 }
 ```
 
-Then keep polling: an approval releases the action and the agent continues.
+Then keep following: an approval releases the action and the agent continues.
 
 **4b. Answer a suggested change or a prose question.** `set_intelligence_tool_approval` cannot help because there is no `toolCallId`, and the MCP API has no separate call that applies a suggested change. After the human decides, use the scope-preserving `create_intelligence_message` procedure above and name the decision and proposed change precisely in `content`. The reply asks the native agent to take the next action and may cause it to call a mutating tool immediately when no `require_approval` policy covers that tool. Send it only after the human has decided.
 
-Then poll until you see a pending step, a terminal step for the mutating call, or a clear refusal or error. If the agent only repeats the proposal without taking the requested next step, stop and report that it did not act.
+Then follow the conversation until you see a pending step, a terminal step for the mutating call, or a clear refusal or error. If the agent only repeats the proposal without taking the requested next step, stop and report that it did not act.
 
 **`suggestedChanges[].applied` is not authoritative state.** It is part of the agent's response, so confirm the result from a terminal mutating step or independent live state before reporting that a change landed.
 
@@ -162,7 +171,7 @@ What actually counts as evidence, in order:
 
 If no mutating step exists and live state does not confirm the change, do not report it as applied. Do not repeat an approval unless a new pending step requires a new decision.
 
-Stop polling when repeated progress checks show no new resource reads, pending action, or terminal result. Tell the human that the conversation is not making progress and direct its owner to manage it in the Akuity Portal.
+Stop following when repeated reads show no new resource reads, pending action, or terminal result. Tell the human that the conversation is not making progress and direct its owner to manage it in the Akuity Portal.
 
 **Approval is owner-only.** Only the principal that created the conversation can approve its actions. If you started it, you can relay the human's decision; if somebody else started it, say so rather than trying.
 
@@ -184,7 +193,7 @@ Do this *before* triggering a production promotion. The verdict informs the huma
 }
 ```
 
-Poll `get_intelligence_conversation` until `processing` is `false`, then read `promotionAnalysis`:
+Follow the conversation until `processing` is `false`, then read `promotionAnalysis`:
 
 - `decision` and `riskLevel` — the verdict
 - `summary` — the reasoning to quote to the human
@@ -208,7 +217,7 @@ Use the Deployment Agent for Kubernetes, Argo CD, Kargo, or Akuity questions and
 - Read [`references/context-selection.md`](references/context-selection.md) before choosing the initial contexts or changing them later. An instance context is useful for inventory and fleet questions, but it is not an umbrella for app-specific details or actions.
 - If the human names an existing conversation, read it with `get_intelligence_conversation` and continue it with the scope-preserving follow-up procedure. Do not create a replacement conversation.
 - Otherwise call `create_intelligence_conversation` with the surface's tenancy arguments and the exact contexts needed for the work, but omit both `incident` and `kargoPromotionAnalysis`. Contexts are optional only for general questions that need no environment data. On the platform surface, the conversation still needs either `instanceId` or `kargoInstanceId` even when it has no contexts.
-- The create response gives you the conversation id; it does not send the human's question. Send the question with `create_intelligence_message`, preserving the returned contexts and runbooks, then poll the full conversation for the reply.
+- The create response gives you the conversation id; it does not send the human's question. Send the question with `create_intelligence_message`, preserving the returned contexts and runbooks, then follow the conversation for the reply.
 
 A normal conversation does not weaken the approval rule. If the native agent proposes a mutable action, relay it to the human and wait for their decision just as you would during an incident.
 
@@ -218,10 +227,10 @@ You can query conversations visible to the current principal, including platform
 
 ## Pitfalls
 
-- **`create_intelligence_message` returns nothing.** That is by design. Poll `get_intelligence_conversation`; do not report "no reply" until `processing` is `false`.
+- **`create_intelligence_message` returns nothing.** That is by design. Follow the conversation; do not report "no reply" until `processing` is `false`.
 - **Conversation payloads get large** — full tool outputs are included. Prefer `list_intelligence_conversations` for status, and when reading a conversation, extract the fields you need instead of dumping the whole object into your reply.
 - **Do not use `mutable` as the only safety check.** Read the proposed `functionName`, `functionArguments`, or patch yourself. Treat a `PENDING_APPROVAL` step, an unapplied `suggestedChanges` entry, or a prose request for permission as a decision for the human.
-- **An unapplied `suggestedChanges` entry is a pending decision, not a finished thought.** It has no `toolCallId` and produces no `PENDING_APPROVAL` step, so polling `processing` and scanning step statuses will never surface it as "waiting". Read `suggestedChanges` before calling an investigation done.
+- **An unapplied `suggestedChanges` entry is a pending decision, not a finished thought.** It has no `toolCallId` and produces no `PENDING_APPROVAL` step, so watching `processing` and scanning step statuses will never surface it as "waiting". Read `suggestedChanges` before calling an investigation done.
 - **Approving in prose can silently no-op.** The agent may assert in `incident.summary` / `incident.rootCause` that it applied a patch it never called a tool to apply, leaving the incident record claiming a resolution that never happened. Verify against a `k8s-patch-resource` step and against live state before you report a fix to anyone — and remember `k8s-verify-resource-patch` is a dry run that proves nothing was applied.
 - **`suggestedChanges[].applied` is not sufficient confirmation.** Check terminal mutation steps and live state before reporting whether the change landed. When the fields disagree, the step result and live state take priority.
 - **Per-step `summary` text is explanatory, not authoritative state.** Read `functionName`, `functionArguments`, and `status`; quote `summary` only as the agent's interpretation.

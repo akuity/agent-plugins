@@ -10,7 +10,7 @@
       "name": "akuity",
       "source": "./plugins/akuity",
       "description": "Akuity Platform workflows over MCP: complete or partial onboarding, plus normal, incident, and pre-promotion work delegated to Akuity Intelligence.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "author": {
         "name": "Akuity",
         "url": "https://akuity.io"
