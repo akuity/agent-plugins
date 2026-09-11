@@ -52,7 +52,7 @@ The complete endpoint model, enablement gates, and login flows are documented in
 | Plugin | Skill | What it does |
 | --- | --- | --- |
 | [`akuity`](plugins/akuity/) | `akuity:onboard` | Run onboarding end to end or only for the missing parts: provision Argo CD and Kargo instances, connect clusters, deploy an app to every environment, and build a Kargo promotion pipeline. |
-| | `akuity:delegate` | Delegate work to Akuity Intelligence: talk normally with the Deployment Agent, hand a degraded app to the On-call Agent, or ask the Promotion Advisor for a pre-promotion risk verdict, with every proposed action relayed for human approval. |
+| | `akuity:delegate` | Delegate work to Akuity agents: talk normally with the Deployment Agent, hand a degraded app to the On-call Agent, or ask the Promotion Advisor for a pre-promotion risk verdict, with every proposed action relayed for human approval. |
 
 In Claude Code, invoke a skill directly with `/akuity:onboard` or `/akuity:delegate`, or describe the outcome and let Claude choose. In Codex, describe the desired outcome and let Codex choose the bundled skill.
 

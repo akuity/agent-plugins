@@ -48,7 +48,7 @@ An app, namespace, or Kargo project used by the Deployment Agent must appear in 
 - Prefer a set of the same context type when the request spans several apps, namespaces, clusters, or Kargo projects.
 - Do not mix broad and narrow contexts merely to expose more capabilities. It makes the target ambiguous and gives the Deployment Agent more scope than the request needs.
 - Keep the context type stable during a conversation. Change it only when the human changes the requested scope or when a discovery step resolves the exact resources required by that request.
-- On an ordinary follow-up, resend the current contexts unchanged because `create_intelligence_message.contexts` is a full replacement set.
+- On an ordinary follow-up, resend the current contexts unchanged because `create_agent_message.contexts` is a full replacement set.
 - When the scope changes, send the complete new desired context set, not only additions or removals, and preserve the complete runbook set in the same call.
 
 ## Special conversations
