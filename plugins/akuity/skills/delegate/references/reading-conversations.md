@@ -4,7 +4,7 @@ Platform-endpoint conversations are visible to users who can access their target
 
 ## Finding conversations
 
-`list_intelligence_conversations` returns each conversation with an **empty `messages` array**, which makes it cheap. Filters:
+`list_agent_conversations` returns each conversation with an **empty `messages` array**, which makes it cheap. Filters:
 
 - `incidentOnly: true` with `incidentStatus: "INCIDENT_STATUS_UNRESOLVED"` — open incidents
 - `scheduledTaskOnly: true` with `scheduledTaskStatus: "SCHEDULED_TASK_STATUS_ACTIVE"` (or `_SUSPENDED`) — conversations driven by a scheduled task
@@ -15,7 +15,7 @@ Platform-endpoint conversations are visible to users who can access their target
 
 ## Reading one conversation
 
-`get_intelligence_conversation` returns the full record. Where to look, by question:
+`get_agent_conversation` returns the full record. Where to look, by question:
 
 | Question | Where to look |
 | --- | --- |
@@ -30,4 +30,4 @@ Platform-endpoint conversations are visible to users who can access their target
 
 ## What the native agent could have done
 
-`list_intelligence_tools` answers "what can the native agent do in this org." Each entry has `name`, `displayName`, `description`, `mutable`, and `availabilityRequirements` (the context types a tool needs). Do not use `mutable` as the only safety check; inspect the proposed action and approval state as described in the skill.
+`list_agent_tools` answers "what can the native agent do in this org." Each entry has `name`, `displayName`, `description`, `mutable`, and `availabilityRequirements` (the context types a tool needs). Do not use `mutable` as the only safety check; inspect the proposed action and approval state as described in the skill.

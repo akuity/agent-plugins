@@ -77,7 +77,7 @@ For CI or automation, register the platform endpoint manually with an Akuity API
 | Skill | What it does |
 | --- | --- |
 | `akuity:onboard` | Onboarding, whole or in part: provision Argo CD and Kargo instances, connect clusters, deploy an app to every environment, and wire a Kargo promotion pipeline that releases only what the user approves — the user picks how far to go. |
-| `akuity:delegate` | Delegate work to Akuity Intelligence: talk normally with the Deployment Agent, hand a degraded app to the On-call Agent, or ask the Promotion Advisor for a pre-promotion risk verdict; relay every proposed action for human approval and read back what the native agent actually did. |
+| `akuity:delegate` | Delegate work to Akuity agents: talk normally with the Deployment Agent, hand a degraded app to the On-call Agent, or ask the Promotion Advisor for a pre-promotion risk verdict; relay every proposed action for human approval and read back what the native agent actually did. |
 
 ## Layout
 

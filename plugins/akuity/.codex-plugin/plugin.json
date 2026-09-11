@@ -1,7 +1,7 @@
 {
   "name": "akuity",
-  "version": "0.2.0",
-  "description": "Akuity Platform workflows over MCP: complete or partial onboarding, plus normal, incident, and pre-promotion work delegated to Akuity Intelligence.",
+  "version": "0.3.0",
+  "description": "Akuity Platform workflows over MCP: complete or partial onboarding, plus normal, incident, and pre-promotion work delegated to Akuity agents.",
   "author": {
     "name": "Akuity",
     "url": "https://akuity.io"
@@ -13,8 +13,8 @@
   "mcpServers": "./codex.mcp.json",
   "interface": {
     "displayName": "Akuity",
-    "shortDescription": "Akuity onboarding and Intelligence workflows",
-    "longDescription": "Connect to the Akuity Platform MCP endpoint, onboard all or part of an Argo CD and Kargo delivery setup, and delegate normal, incident, or promotion-risk work to Akuity Intelligence.",
+    "shortDescription": "Akuity onboarding and agent workflows",
+    "longDescription": "Connect to the Akuity Platform MCP endpoint, onboard all or part of an Argo CD and Kargo delivery setup, and delegate normal, incident, or promotion-risk work to Akuity agents.",
     "developerName": "Akuity",
     "category": "Productivity",
     "capabilities": ["Interactive", "Read", "Write"],
