@@ -1,6 +1,6 @@
 {
   "name": "akuity",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Akuity Platform workflows over MCP: complete or partial onboarding, plus normal, incident, and pre-promotion work delegated to Akuity agents.",
   "author": {
     "name": "Akuity",

@@ -4,7 +4,7 @@ These are not discoverable from the tool schemas, and most of the failures they 
 
 ## Ownership and scoping
 
-- **Warehouse and Stage resources must each carry `spec.shard` set to the name of the Kargo agent** registered for this Argo CD instance. Project has no shard field. Without it, the warehouse produces no Freight and the pipeline remains idle without reporting an error.
+- **Warehouse and Stage resources must each carry `spec.shard` set to the name of the Kargo agent** registered for this Argo CD instance — or the Kargo instance must carry `spec.kargoInstanceSpec.defaultShardAgent` (the agent's **id**), which is what shardless layouts such as akp-platform rely on. The `apply_kargo_instance` tool description still states the shard rule without this exception — it predates `defaultShardAgent`, so do not treat it as a disagreement to resolve in the tool's favour. Project has no shard field. With neither, the warehouse produces no Freight and the pipeline remains idle without reporting an error. The instance list reads do not echo `defaultShardAgent`; verify by the Freight appearing.
 - **Set `metadata.namespace: <project name>` explicitly on every Warehouse, Stage, and credential Secret sent through the platform endpoint's Kargo apply.** An omitted namespace there does not default to the project — the resource lands in the instance's own `kargo` namespace, applies cleanly, and is silently never picked up: the same no-error idle pipeline as a missing shard. (Only on a Kargo instance's own endpoint does an omitted namespace default to the project named in the call's `kargoProject.name` argument.) `Project` itself is cluster-scoped and takes no namespace.
 
 ## Image selection and freight
