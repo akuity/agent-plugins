@@ -19,7 +19,15 @@ A validation or ignored-field failure is a signal to re-check these sources, not
 - Cluster creation CLI flags and defaults: https://docs.akuity.io/akuity-portal/reference/cli/akuity_argocd_cluster_create/
 - Agent installation alternatives: https://docs.akuity.io/akuity-portal/automation/agent-helm-chart/
 
-The declarative-spec page does not define every MCP-specific cluster wrapper. For a `clusters` entry or direct Kargo control-plane destination, require an exact shape from the live apply schema. If it is not there, do not guess `directClusterSpec` nesting; ask the user to use the portal or choose direct apply for the control resources.
+The declarative-spec page does not define the MCP cluster wrappers; `manifest-kinds.md` does. A workload cluster is a `Cluster` with `spec.data.size`; the Kargo control plane is a `Cluster` with `spec.data.size: small` plus `spec.data.directClusterSpec: {clusterType: kargo, kargoInstanceId}`. Use those shapes as written — the apply's `clusters` argument is a free-form object, so the live schema will not spell them out, and that absence is not a reason to fall back to the portal.
+
+## Akuity Terraform provider (Terraform mode)
+
+- Provider docs, per version: `https://registry.terraform.io/providers/akuity/akp/<version>/docs` — replace `<version>` with the exact version pinned in `required_providers`, not `latest`. Each resource page ends with an **Import** section giving that version's import ID format.
+- Reference layout and verified gotchas: https://github.com/akuity/akp-infra (`01-argocd`, `02-kargo`, `03-clusters`), with `docs/importing-existing.md` for adoption and `docs/day-2.md` for drift, upgrades, and remote state.
+- Terraform `import` blocks: https://developer.hashicorp.com/terraform/language/import
+
+The registry page carries semantics; **attribute names, nesting, and required/optional status come from `terraform providers schema -json` on the installed provider**, and the instance `version` is the user's choice; `akuity argocd instance versions` / `akuity kargo instance versions` list what the organization can run. `references/terraform-mode.md` has the full source order.
 
 ## Kargo resources
 
