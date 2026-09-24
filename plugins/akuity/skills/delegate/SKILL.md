@@ -3,11 +3,11 @@ name: delegate
 description: >-
   Delegate work to Akuity's native AI agents through the Akuity MCP endpoints:
   start or continue a normal context-aware conversation with the Deployment
-  Agent,
-  hand a degraded application to the On-call Agent and relay its proposed
+  Advisor,
+  hand a degraded application to the On-Call Agent and relay its proposed
   remediation for human approval, request a promotion risk verdict from the
   Promotion Advisor before releasing, and read back work a native agent
-  performed. Use when asked to ask the Deployment Agent a question, continue an
+  performed. Use when asked to ask the Deployment Advisor a question, continue an
   Akuity agent conversation, hand an incident to Akuity, check whether
   a promotion is safe, or find out what an Akuity agent did.
 ---
@@ -35,7 +35,7 @@ Only the first carries a `toolCallId`. The other two have no approval handle at 
 1. **The Akuity MCP server must be connected** — the platform endpoint this plugin wires, or an instance's own endpoint (see `../../references/endpoints-and-auth.md`, relative to this file). Confirm the delegation tools are present before planning work — if `create_agent_conversation` is not in your tool list under any prefix, stop and tell the human the server is not connected or the organization lacks the entitlement.
 2. **Know which surface you are on** — it changes the arguments (table below).
 3. **Resolve the organization on the platform surface.** Call `list_organizations` to map the human's organization name to its id, and confirm the target when more than one organization is available. Instance surfaces need no organization id.
-4. **Choose contexts for the requested depth.** Contexts define both the conversation's resource scope and the capabilities available to the Deployment Agent. Before creating or changing a normal conversation, read [`references/context-selection.md`](references/context-selection.md) and select the smallest exact scope that supports the request.
+4. **Choose contexts for the requested depth.** Contexts define both the conversation's resource scope and the capabilities available to the Deployment Advisor. Before creating or changing a normal conversation, read [`references/context-selection.md`](references/context-selection.md) and select the smallest exact scope that supports the request.
 
 ### Surfaces
 
@@ -50,7 +50,7 @@ On an instance host the dispatcher is also pinned to the product: `incident` exi
 
 | Tool | Use |
 | --- | --- |
-| `create_agent_conversation` | Start work with the On-call Agent, Promotion Advisor, or Deployment Agent |
+| `create_agent_conversation` | Start work with the On-Call Agent, Promotion Advisor, or Deployment Advisor |
 | `create_agent_message` | Send a follow-up while preserving its conversation scope (see below). **Returns empty by design** — the reply arrives asynchronously; follow the conversation (see [Following a conversation](#following-a-conversation)) |
 | `get_agent_conversation` | Full state: messages, steps, incident/promotion metadata, runbooks. Use to read progress and results |
 | `list_agent_conversations` | Cheap listing/filtering. Returns each conversation with an **empty `messages` array** — use it for status sweeps, not timelines |
@@ -80,7 +80,7 @@ Before every `create_agent_message` call:
 
 If the full read fails, do not send the message: there is no safe conversation scope to preserve. After the empty send response, follow the conversation as usual and make sure its contexts and runbooks still match the intended sets.
 
-## Scenario A — hand a degraded app to the On-call Agent
+## Scenario A — hand a degraded app to the On-Call Agent
 
 **1. Open the incident.** Exactly one context is required, and it must be an application or a namespace. Anything else is rejected with `InvalidArgument`.
 
@@ -97,7 +97,7 @@ If the full read fails, do not send the message: there is no safe conversation s
 }
 ```
 
-The response carries the conversation, including `id` — keep it. The On-call Agent starts automatically; the platform infers which runbooks apply and lists them under `runbooks` (empty when the instance has none configured). Tell the human the incident number (`incident.incidentNumber`) so they can find it in the portal.
+The response carries the conversation, including `id` — keep it. The On-Call Agent starts automatically; the platform infers which runbooks apply and lists them under `runbooks` (empty when the instance has none configured). Tell the human the incident number (`incident.incidentNumber`) so they can find it in the portal.
 
 **2. Follow it** (see [Following a conversation](#following-a-conversation)). Investigations can run for several minutes, so partial progress is normal and worth surfacing.
 
@@ -210,9 +210,9 @@ Follow the conversation until `processing` is `false`, then read `promotionAnaly
 
 Never promote on a verdict you did not actually read back.
 
-## Scenario C — have a normal conversation with the Deployment Agent
+## Scenario C — have a normal conversation with the Deployment Advisor
 
-Use the Deployment Agent for Kubernetes, Argo CD, Kargo, or Akuity questions and operational work that is neither an incident investigation nor a promotion verdict.
+Use the Deployment Advisor for Kubernetes, Argo CD, Kargo, or Akuity questions and operational work that is neither an incident investigation nor a promotion verdict.
 
 - Read [`references/context-selection.md`](references/context-selection.md) before choosing the initial contexts or changing them later. An instance context is useful for inventory and fleet questions, but it is not an umbrella for app-specific details or actions.
 - If the human names an existing conversation, read it with `get_agent_conversation` and continue it with the scope-preserving follow-up procedure. Do not create a replacement conversation.

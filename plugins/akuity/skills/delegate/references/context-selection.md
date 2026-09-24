@@ -1,6 +1,6 @@
 # Choosing conversation contexts
 
-Contexts are not just labels. They define the resources in scope and which environment-aware capabilities the Deployment Agent can use. Choose them from the work the human asked for, not only from whether the target is Argo CD or Kargo.
+Contexts are not just labels. They define the resources in scope and which environment-aware capabilities the Deployment Advisor can use. Choose them from the work the human asked for, not only from whether the target is Argo CD or Kargo.
 
 Tool availability can change between platform versions. Trust the conversation's advertised tools first; use this guide to choose the intended scope.
 
@@ -31,12 +31,12 @@ The example shows every shape together only for reference. Do not copy the whole
 | `kargoProject` | Project structure, stages, warehouses, freight, promotions, and operational work for one project or an exact set of projects | Kargo projects that are not in the selected set |
 | no context | A general Kubernetes, Argo CD, Kargo, or Akuity question that needs no environment lookup | Inspecting or changing environment resources |
 
-An app, namespace, or Kargo project used by the Deployment Agent must appear in the selected context set. Selecting one app does not make every app in its instance part of the conversation.
+An app, namespace, or Kargo project used by the Deployment Advisor must appear in the selected context set. Selecting one app does not make every app in its instance part of the conversation.
 
 ## Common choices
 
 - **"Summarize all apps" using list-level fields**: use `argoCdInstance`, or `argoCdCluster` when the request names one cluster. This is enough for app identity, source, destination, sync, health, summary, and last-operation information.
-- **"Give me a detailed summary of apps A, B, and C"**: use three exact `argoCdApp` contexts so the Deployment Agent can perform per-app reads for those apps.
+- **"Give me a detailed summary of apps A, B, and C"**: use three exact `argoCdApp` contexts so the Deployment Advisor can perform per-app reads for those apps.
 - **"Give me detailed summaries for every app"**: list the apps first with an MCP inventory tool, then attach the exact app contexts needed. If the set is large, use the list-level summary or ask the human to narrow it instead of creating an oversized conversation scope.
 - **"What images, CVEs, or deprecated APIs exist here?"**: use `argoCdInstance` or `argoCdCluster`, not app or namespace context.
 - **"What is happening in this namespace?"**: use the exact `k8sNamespace`.
@@ -46,12 +46,12 @@ An app, namespace, or Kargo project used by the Deployment Agent must appear in 
 ## Multiple contexts and follow-ups
 
 - Prefer a set of the same context type when the request spans several apps, namespaces, clusters, or Kargo projects.
-- Do not mix broad and narrow contexts merely to expose more capabilities. It makes the target ambiguous and gives the Deployment Agent more scope than the request needs.
+- Do not mix broad and narrow contexts merely to expose more capabilities. It makes the target ambiguous and gives the Deployment Advisor more scope than the request needs.
 - Keep the context type stable during a conversation. Change it only when the human changes the requested scope or when a discovery step resolves the exact resources required by that request.
 - On an ordinary follow-up, resend the current contexts unchanged because `create_agent_message.contexts` is a full replacement set.
 - When the scope changes, send the complete new desired context set, not only additions or removals, and preserve the complete runbook set in the same call.
 
 ## Special conversations
 
-- **On-call Agent**: an incident requires exactly one `argoCdApp` or `k8sNamespace` context. Instance, cluster, Kargo project, multiple, or empty contexts are rejected.
+- **On-Call Agent**: an incident requires exactly one `argoCdApp` or `k8sNamespace` context. Instance, cluster, Kargo project, multiple, or empty contexts are rejected.
 - **Promotion Advisor**: `kargoPromotionAnalysis` establishes the project scope from the requested project. Do not broaden or replace that scope during the analysis.
