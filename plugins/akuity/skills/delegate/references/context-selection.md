@@ -48,8 +48,8 @@ An app, namespace, or Kargo project used by the Deployment Advisor must appear i
 - Prefer a set of the same context type when the request spans several apps, namespaces, clusters, or Kargo projects.
 - Do not mix broad and narrow contexts merely to expose more capabilities. It makes the target ambiguous and gives the Deployment Advisor more scope than the request needs.
 - Keep the context type stable during a conversation. Change it only when the human changes the requested scope or when a discovery step resolves the exact resources required by that request.
-- On an ordinary follow-up, resend the current contexts unchanged because `create_agent_message.contexts` is a full replacement set.
-- When the scope changes, send the complete new desired context set, not only additions or removals, and preserve the complete runbook set in the same call.
+- Before a follow-up, check the server's omission behavior using the [follow-up procedure](../SKILL.md#conversation-scope-on-follow-ups). On servers that advertise preservation, omit `contexts` and `runbooks` to leave the stored sets unchanged. Otherwise, read both sets first and include them in the follow-up.
+- When the scope changes, send the complete new desired context set as `contexts`, not only additions or removals. Keep `runbooks` using the same compatibility procedure. Never send `[]` for a set you want to keep, because an empty array clears it.
 
 ## Special conversations
 

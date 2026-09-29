@@ -51,7 +51,7 @@ On an instance host the dispatcher is also pinned to the product: `incident` exi
 | Tool | Use |
 | --- | --- |
 | `create_agent_conversation` | Start work with the On-Call Agent, Promotion Advisor, or Deployment Advisor |
-| `create_agent_message` | Send a follow-up while preserving its conversation scope (see below). **Returns empty by design** — the reply arrives asynchronously; follow the conversation (see [Following a conversation](#following-a-conversation)) |
+| `create_agent_message` | Send a follow-up. Omit `contexts` and `runbooks` to keep the conversation's scope (see below). **Returns empty by design** — the reply arrives asynchronously; follow the conversation (see [Following a conversation](#following-a-conversation)) |
 | `get_agent_conversation` | Full state: messages, steps, incident/promotion metadata, runbooks. Use to read progress and results |
 | `list_agent_conversations` | Cheap listing/filtering. Returns each conversation with an **empty `messages` array** — use it for status sweeps, not timelines |
 | `set_agent_tool_approval` | Approve or reject one proposed tool call, after the human decides |
@@ -68,17 +68,22 @@ Work in a conversation is asynchronous: `create_agent_conversation` starts it an
 
 Either way, the conversation record is the source of truth; a notification only tells you when to read it. Everything below that says "follow" means this procedure.
 
-### Preserve conversation scope on every follow-up
+### Conversation scope on follow-ups
 
-Although `create_agent_message` appends one user message, its `contexts` and `runbooks` arguments are the complete replacement sets for the conversation, not attachments to that message. With the current API, omitting either repeated field sends an empty list and clears the stored set.
+Before sending a follow-up, check the connected server's `create_agent_message` description. Use the omission behavior below only when it explicitly says an omitted argument preserves the conversation's stored set. Otherwise, read the full conversation with `get_agent_conversation` before every follow-up and resend both sets unchanged, replacing only the sets the human asked to change. If that read fails, do not send the message. Older servers clear omitted sets; reading after sending cannot recover them. An older Kargo endpoint also rejects Argo CD contexts and non-empty runbooks: never drop them to make the call succeed. Send the follow-up through the platform endpoint if the human has access there; otherwise stop and tell the human.
 
-Before every `create_agent_message` call:
+`create_agent_message` appends one user message. Its `contexts` and `runbooks` arguments are not attachments to that message: each one, when sent, is the complete replacement set for the conversation. The two arguments are independent, and the server reads them as:
 
-1. Read the full conversation with `get_agent_conversation`. Do not use a list result: list responses omit messages and are not the source of truth for a follow-up.
-2. Pass the returned `contexts` and `runbooks` back unchanged as tool arguments. Copy the advertised objects exactly; do not reconstruct, shorten, or paste them into `content`.
-3. If the human explicitly changes contexts or runbooks, send the complete desired replacement sets — not only the additions or removals.
+| You send | Effect on the stored set |
+| --- | --- |
+| argument omitted | unchanged |
+| `[]` | cleared |
+| a non-empty array | replaced by exactly that array |
+| `null` | rejected as invalid |
 
-If the full read fails, do not send the message: there is no safe conversation scope to preserve. After the empty send response, follow the conversation as usual and make sure its contexts and runbooks still match the intended sets.
+So for an ordinary follow-up, send only `content` and the tenancy arguments — omit both `contexts` and `runbooks` — and the conversation keeps the scope it was created with. When the human explicitly changes the scope, send the complete desired set for the argument that changes, not only the additions or removals, and still omit the other one. Never send an empty array to "leave it alone": that clears it.
+
+If the server reports that contexts or runbooks changed during the request, nothing was saved: read the conversation and check its scope against the human's request before retrying.
 
 ## Scenario A — hand a degraded app to the On-Call Agent
 
@@ -158,7 +163,7 @@ In every case, say plainly whether the change lands on the **live cluster** or i
 
 Then keep following: an approval releases the action and the agent continues.
 
-**4b. Answer a suggested change or a prose question.** `set_agent_tool_approval` cannot help because there is no `toolCallId`, and the MCP API has no separate call that applies a suggested change. After the human decides, use the scope-preserving `create_agent_message` procedure above and name the decision and proposed change precisely in `content`. The reply asks the native agent to take the next action and may cause it to call a mutating tool immediately when no `require_approval` policy covers that tool. Send it only after the human has decided.
+**4b. Answer a suggested change or a prose question.** `set_agent_tool_approval` cannot help because there is no `toolCallId`, and the MCP API has no separate call that applies a suggested change. After the human decides, send a `create_agent_message` using the [follow-up procedure](#conversation-scope-on-follow-ups) and name the decision and proposed change precisely in `content`. The reply asks the native agent to take the next action and may cause it to call a mutating tool immediately when no `require_approval` policy covers that tool. Send it only after the human has decided.
 
 Then follow the conversation until you see a pending step, a terminal step for the mutating call, or a clear refusal or error. If the agent only repeats the proposal without taking the requested next step, stop and report that it did not act.
 
@@ -215,9 +220,9 @@ Never promote on a verdict you did not actually read back.
 Use the Deployment Advisor for Kubernetes, Argo CD, Kargo, or Akuity questions and operational work that is neither an incident investigation nor a promotion verdict.
 
 - Read [`references/context-selection.md`](references/context-selection.md) before choosing the initial contexts or changing them later. An instance context is useful for inventory and fleet questions, but it is not an umbrella for app-specific details or actions.
-- If the human names an existing conversation, read it with `get_agent_conversation` and continue it with the scope-preserving follow-up procedure. Do not create a replacement conversation.
+- If the human names an existing conversation, read it with `get_agent_conversation` and continue it with `create_agent_message` using the [follow-up procedure](#conversation-scope-on-follow-ups). Do not create a replacement conversation.
 - Otherwise call `create_agent_conversation` with the surface's tenancy arguments and the exact contexts needed for the work, but omit both `incident` and `kargoPromotionAnalysis`. Contexts are optional only for general questions that need no environment data. On the platform surface, the conversation still needs either `instanceId` or `kargoInstanceId` even when it has no contexts.
-- The create response gives you the conversation id; it does not send the human's question. Send the question with `create_agent_message`, preserving the returned contexts and runbooks, then follow the conversation for the reply.
+- The create response gives you the conversation id; it does not send the human's question. Send the question with `create_agent_message` using the [follow-up procedure](#conversation-scope-on-follow-ups), then follow the conversation for the reply.
 
 A normal conversation does not weaken the approval rule. If the native agent proposes a mutable action, relay it to the human and wait for their decision just as you would during an incident.
 
